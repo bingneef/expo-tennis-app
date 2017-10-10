@@ -1,44 +1,57 @@
-import React from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
-import { AppLoading, Asset, Font } from 'expo';
-import { Ionicons } from '@expo/vector-icons';
-import RootNavigation from './navigation/RootNavigation';
+import React from 'react'
+import { Platform, StatusBar, StyleSheet, View } from 'react-native'
+import { AppLoading, Asset, Font } from 'expo'
+import { Ionicons } from '@expo/vector-icons'
+import constants from './config/constants.js'
+import RootNavigation from './navigation/RootNavigation'
 
-import ApolloClient, { createNetworkInterface } from 'apollo-client';
-import { ApolloProvider, graphql } from 'react-apollo';
+import ApolloClient, { createNetworkInterface } from 'apollo-client'
+import { ApolloProvider, graphql } from 'react-apollo'
 
+import {SubscriptionClient, addGraphQLSubscriptions} from 'subscriptions-transport-ws'
+
+const wsClient = new SubscriptionClient(`ws://${constants.serverUrl}/subscriptions`, {
+  reconnect: true
+})
+
+// Create a normal network interface:
 const networkInterface = createNetworkInterface({
-  uri: 'https://a8e50b1a.ngrok.io/graphql',
-});
+  uri: `http://${constants.serverUrl}/graphql`
+})
 
 networkInterface.use([{
   applyMiddleware(req, next) {
     if (!req.options.headers) {
-      req.options.headers = {};
+      req.options.headers = {}
     }
     const token = 'testtest'
     req.options.headers['x-auth'] = token
-    next();
+    next()
   }
 }])
 
+// Extend the network interface with the WebSocket
+const networkInterfaceWithSubscriptions = addGraphQLSubscriptions(
+  networkInterface,
+  wsClient
+)
+// Finally, create your ApolloClient instance with the modified network interface
 const client = new ApolloClient({
-  networkInterface
-});
-
+  networkInterface: networkInterfaceWithSubscriptions
+})
 
 export default class App extends React.Component {
   state = {
     assetsAreLoaded: false,
-  };
+  }
 
   componentWillMount() {
-    this._loadAssetsAsync();
+    this._loadAssetsAsync()
   }
 
   render() {
     if (!this.state.assetsAreLoaded && !this.props.skipLoadingScreen) {
-      return <AppLoading />;
+      return <AppLoading />
     } else {
       return (
         <ApolloProvider client={client}>
@@ -49,7 +62,7 @@ export default class App extends React.Component {
             <RootNavigation />
           </View>
         </ApolloProvider>
-      );
+      )
     }
   }
 
@@ -57,27 +70,26 @@ export default class App extends React.Component {
     try {
       await Promise.all([
         Asset.loadAsync([
-          require('./assets/images/robot-dev.png'),
-          require('./assets/images/robot-prod.png'),
+          // require('./assets/images/robot-dev.png'),
         ]),
         Font.loadAsync([
-          // This is the font that we are using for our tab bar
           Ionicons.font,
-          // We include SpaceMono because we use it in HomeScreen.js. Feel free
-          // to remove this if you are not using it in your app
           { 'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf') },
+          { 'open-sans': require('./assets/fonts/OpenSans-Regular.ttf') },
+          { 'open-sans-bold': require('./assets/fonts/OpenSans-Bold.ttf') },
+          { 'sf-pro': require('./assets/fonts/SF-Pro-Text-Medium.otf') },
+          { 'sf-pro-bold': require('./assets/fonts/SF-Pro-Text-Bold.otf') },
+          { 'sf-pro-black': require('./assets/fonts/SF-Pro-Display-Black.otf') },
         ]),
-      ]);
+      ])
     } catch (e) {
-      // In this case, you might want to report the error to your error
-      // reporting service, for example Sentry
       console.warn(
         'There was an error caching assets (see: App.js), perhaps due to a ' +
           'network timeout, so we skipped caching. Reload the app to try again.'
-      );
-      console.log(e);
+      )
+      console.log(e)
     } finally {
-      this.setState({ assetsAreLoaded: true });
+      this.setState({ assetsAreLoaded: true })
     }
   }
 }
@@ -91,4 +103,4 @@ const styles = StyleSheet.create({
     height: 24,
     backgroundColor: 'rgba(0,0,0,0.2)',
   },
-});
+})

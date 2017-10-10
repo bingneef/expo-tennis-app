@@ -1,47 +1,58 @@
-import React from 'react';
-import { Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { TabNavigator, TabBarBottom } from 'react-navigation';
+import React from 'react'
+import { Platform } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { TabNavigator, TabBarBottom } from 'react-navigation'
 
-import Colors from '../constants/Colors';
+import Colors from '../constants/Colors'
 
-import HomeScreen from '../screens/HomeScreen';
-import SearchScreen from '../screens/SearchScreen';
-import SettingsScreen from '../screens/SettingsScreen';
-import ReleaseScreen from '../screens/ReleaseScreen';
+import MatchCenterScreen from '../screens/MatchCenterScreen'
+import AccountScreen from '../screens/AccountScreen'
+import NewsFeedScreen from '../screens/NewsFeedScreen'
+import LiveScreen from '../screens/LiveScreen'
+import NewsFeedNavigation from './NewsFeedNavigation'
 
 export default TabNavigator(
   {
-    Search: {
-      screen: SearchScreen,
+    MatchCenter: {
+      screen: MatchCenterScreen,
     },
-    Home: {
-      screen: HomeScreen,
+    NewsFeed: {
+      screen: NewsFeedNavigation,
     },
-    Settings: {
-      screen: SettingsScreen,
+    Live: {
+      screen: LiveScreen,
+    },
+    Account: {
+      screen: AccountScreen,
     },
   },
   {
     navigationOptions: ({ navigation }) => ({
+      headerMode: 'none',
       tabBarIcon: ({ focused }) => {
-        const { routeName } = navigation.state;
-        let iconName;
+        const { routeName } = navigation.state
+        let iconName
         switch (routeName) {
-          case 'Home':
+          case 'Account':
             iconName = Platform.OS === 'ios'
-              ? `ios-information-circle${focused ? '' : '-outline'}`
-              : 'md-information-circle';
-            break;
-          case 'Search':
+              ? `ios-person${focused ? '' : '-outline'}`
+              : 'md-person'
+            break
+          case 'Live':
             iconName = Platform.OS === 'ios'
-              ? `ios-search${focused ? '' : '-outline'}`
-              : 'md-search';
-            break;
-          case 'Settings':
+              ? `ios-basketball${focused ? '' : '-outline'}`
+              : 'md-basketball'
+            break
+          case 'NewsFeed':
             iconName = Platform.OS === 'ios'
-              ? `ios-options${focused ? '' : '-outline'}`
-              : 'md-options';
+              ? `ios-compass${focused ? '' : '-outline'}`
+              : 'md-compass'
+            break
+          case 'MatchCenter':
+            iconName = Platform.OS === 'ios'
+              ? `ios-analytics${focused ? '' : '-outline'}`
+              : 'md-analytics'
+            break
         }
         return (
           <Ionicons
@@ -50,7 +61,7 @@ export default TabNavigator(
             style={{ marginBottom: -3 }}
             color={focused ? Colors.tabIconSelected : Colors.tabIconDefault}
           />
-        );
+        )
       },
     }),
     tabBarComponent: TabBarBottom,
@@ -58,4 +69,4 @@ export default TabNavigator(
     animationEnabled: false,
     swipeEnabled: false,
   }
-);
+)

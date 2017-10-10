@@ -1,30 +1,24 @@
-import React from 'react';
-import { StackNavigator } from 'react-navigation';
+import React from 'react'
+import { View } from 'react-native'
+import { StackNavigator } from 'react-navigation'
 
-import MainTabNavigator from './MainTabNavigator';
-import ReleaseScreen from '../screens/ReleaseScreen';
+import MainTabNavigator from './MainTabNavigator'
 
 const RootStackNavigator = StackNavigator(
   {
     Main: {
       screen: MainTabNavigator,
     },
-    Release: {
-      screen: ReleaseScreen,
-      routeName: 'Release',
-    },
   },
   {
-    navigationOptions: () => ({
-      headerTitleStyle: {
-        fontWeight: 'normal',
-      },
-    }),
+    headerMode: 'none',
   }
-);
+)
 
 export default class RootNavigator extends React.Component {
   render() {
-    return <RootStackNavigator />
+    return (
+      <RootStackNavigator style={{backgroundColor: 'white'}} />
+    )
   }
 }
