@@ -54,7 +54,7 @@ class MatchCenterScreen extends React.Component {
     const value = this.refs.form.getValue()
     await this.props.mutate({
       variables: {
-        matchId: '59da35b0f780960ee720b1c5',
+        matchId: '59dc76528f4e982f77bc1089',
         status: value.status,
       }
     })

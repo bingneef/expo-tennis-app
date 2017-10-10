@@ -1,8 +1,6 @@
-const serverUrl = `192.168.0.109:4000`
+const serverUrl = `10.0.1.55:4000`
 
-const constants = {
+export default {
   version: '0.0.1',
   serverUrl,
-};
-
-module.exports = constants;
+}
