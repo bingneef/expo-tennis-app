@@ -15,7 +15,6 @@ const wsClient = new SubscriptionClient(`ws://${env.serverUrl}/subscriptions`, {
 })
 
 // Create a normal network interface:
-console.log(`http://${env.serverUrl}/graphql`)
 const networkInterface = createNetworkInterface({
   uri: `http://${env.serverUrl}/graphql`
 })

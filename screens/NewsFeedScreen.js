@@ -108,19 +108,22 @@ export default class NewsFeedScreen extends React.Component {
       loadingMore: false,
     }
 
-    this.todayString = this.todayString.bind(this)
     this.navigateToItem = this.navigateToItem.bind(this)
-    this._renderCard = this._renderCard.bind(this)
-    this._onRefresh = this._onRefresh.bind(this)
-    this._onloadMore = this._onRefresh.bind(this)
-  }
+    this.onRefresh = this.onRefresh.bind(this)
+    this.loadMore = this.loadMore.bind(this)
 
-  todayString () {
-    return moment().format('MMMM Do YYYY')
+    this._renderSlider = this._renderSlider.bind(this)
+    this._renderCard = this._renderCard.bind(this)
+    this._renderListItem = this._renderListItem.bind(this)
   }
 
   dateString (date) {
-    return moment(date).format('MMMM Do YYYY')
+    const format = 'MMMM Do YYYY'
+    if (date) {
+      return moment(date).format(format)
+    } else {
+      return moment().format(format)
+    }
   }
 
   navigateToItem (id) {
@@ -139,6 +142,26 @@ export default class NewsFeedScreen extends React.Component {
       return item.tags.join(', ').toUpperCase()
     }
     return null
+  }
+
+  async onRefresh () {
+    if (this.state.refreshing) {
+      return
+    }
+    this.setState({refreshing: true})
+    await this.props.refetch({cursor: 0})
+    this.setState({refreshing: false})
+  }
+
+  async loadMore () {
+    const nothingLeftToLoad = this.props.newsItems.totalCount ==  this.props.newsItems.feed.length
+    if (this.state.loadingMore || nothingLeftToLoad) {
+      return
+    }
+
+    this.setState({loadingMore: true})
+    await this.props.loadMoreNewsItems()
+    this.setState({loadingMore: false})
   }
 
   _renderSlider ({data, ref}) {
@@ -178,17 +201,6 @@ export default class NewsFeedScreen extends React.Component {
     )
   }
 
-  async _onRefresh () {
-    this.setState({refreshing: true})
-    await this.props.refetch({cursor: 0})
-    this.setState({refreshing: false})
-  }
-
-  async _loadMore () {
-    this.setState({loadingMore: true})
-    await this.props.loadMoreNewsItems()
-    this.setState({loadingMore: false})
-  }
 
   render() {
     if (this.props.loading && !this.state.loadingMore && !this.props.featured) {
@@ -216,13 +228,23 @@ export default class NewsFeedScreen extends React.Component {
     }
 
     return (
-      <ScrollView style={styles.container} refreshControl={
-        <RefreshControl
-          refreshing={this.state.refreshing}
-          onRefresh={this._onRefresh.bind(this)}
-        />}>
+      <ScrollView
+        style={styles.container}
+        scrollEventThrottle={ 1000 }
+        onScroll={(e) => {
+          let paddingToBottom = 40
+          paddingToBottom += e.nativeEvent.layoutMeasurement.height;
+          if(e.nativeEvent.contentOffset.y >= e.nativeEvent.contentSize.height - paddingToBottom) {
+            this.loadMore()
+          }
+        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={this.state.refreshing}
+            onRefresh={this.onRefresh}
+          />} >
         <View style={[styles.section, styles.sectionContainer]}>
-          <SubTitle>{this.todayString().toUpperCase()}</SubTitle>
+          <SubTitle>{this.dateString(new Date()).toUpperCase()}</SubTitle>
           <Title>Newsfeed</Title>
         </View>
 
@@ -258,27 +280,17 @@ export default class NewsFeedScreen extends React.Component {
           )
         }
         {
-          this.props.newsItems.totalCount !==  this.props.newsItems.feed.length && (
+          this.state.loadingMore && (
             <View style={[styles.section, styles.sectionContainer]}>
-              {
-                this.state.loadingMore ? (
-                  <ActivityIndicator
-                    animating={ true }
-                    size="large"
-                  />
-                ) : (
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={this._loadMore.bind(this)} >
-                  <SFText style={{fontSize: 20}}>Load more..</SFText>
-                </TouchableOpacity>
-                )
-              }
+              <ActivityIndicator
+                animating={ true }
+                size="large"
+              />
             </View>
           )
         }
 
-        <View style={{paddingBottom: 24}} />
+        <View style={{paddingBottom: 64}} />
       </ScrollView>
     )
   }
