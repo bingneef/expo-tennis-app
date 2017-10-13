@@ -26,8 +26,10 @@
     "react-native-parallax-view": "^2.0.6",
     "react-native-snap-carousel": "^3.3.2",
     "react-navigation": "^1.0.0-beta.12",
+    "sports-live": "^1.0.1",
     "subscriptions-transport-ws": "0.6.0",
-    "tcomb-form-native": "^0.6.10"
+    "tcomb-form-native": "^0.6.10",
+    "underscore.string": "^3.3.4"
   },
   "devDependencies": {
     "jest-expo": "^21.0.0",

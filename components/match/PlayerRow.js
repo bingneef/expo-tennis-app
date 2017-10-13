@@ -32,8 +32,8 @@ export default class PlayerRow extends React.Component {
 
   render() {
     return (
-      <View style={ [styles.container, this.props.firstRow && styles.firstRow] }>
-        <SansText style={styles.playerNameCol}>{ this.props.name }</SansText>
+      <View style={ styles.container }>
+        <SansText bold={ this.props.playerWon } style={ styles.playerNameCol }>{ this.props.name }</SansText>
         {
           this.props.playerWon ? (
             <Ionicons style={styles.gameScoreCol} name="ios-checkmark" size={16} color="green" />
@@ -42,8 +42,7 @@ export default class PlayerRow extends React.Component {
           )
         }
         {
-          this.setArray(this.props.completedSets, this.props.currentSetGames)
-          .map((set, index) => <Text key={index} style={[styles.setCol, set.won && styles.setWon]}>{ set.score } { set.won }</Text>)
+          this.props.completedSets.map((set, index) => <Text key={index} style={[styles.setCol, set.won && styles.setWon]}>{ set.score }</Text>)
         }
       </View>
     );
@@ -57,13 +56,11 @@ const styles = StyleSheet.create({
     padding: 4,
     marginTop: 1,
     alignItems: 'center',
-  },
-  firstRow: {
-    borderBottomWidth: 2,
-    borderColor: 'red',
+    backgroundColor: '#F3F3F3',
   },
   playerNameCol: {
     flex: 1,
+    fontSize: 12,
   },
   winMarkCol: {
     width: 10,

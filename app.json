@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "tradfri",
-    "description": "No description",
-    "slug": "tradfri",
+    "name": "TennisApp",
+    "description": "App for all your tennis needs.",
+    "slug": "tennis-app",
     "privacy": "public",
     "sdkVersion": "21.0.0",
     "version": "1.0.0",
@@ -15,13 +15,18 @@
     },
     "loading": {
       "icon": "./assets/icons/loading-icon.png",
-      "hideExponentText": false
+      "hideExponentText": true
     },
     "packagerOpts": {
       "assetExts": ["ttf"]
     },
     "ios": {
       "supportsTablet": true
+    },
+    "extra": {
+      "env": {
+        "serverUrl": "5.157.85.46:4000"
+      }
     }
   }
 }

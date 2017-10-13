@@ -121,6 +121,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   title: {
-    fontSize: 32,
+    fontSize: 20,
   },
 })

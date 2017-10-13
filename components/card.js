@@ -21,7 +21,7 @@ class Card extends React.Component {
       <View style={[this.props.style, styles.container]}>
         <View style={styles.topSection}>
           <SFText style={styles.superTitle}>{this.props.superTitle}</SFText>
-          <SFText bold={true} style={styles.title}>{this.props.title}</SFText>
+          <SFText ellipsizeMode="tail" numberOfLines={2} bold={true} style={styles.title}>{this.props.title}</SFText>
           <SFText style={styles.subTitle}>{this.props.subTitle}</SFText>
         </View>
         <View style={styles.cardContainer}>
@@ -65,6 +65,8 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 8,
+    paddingBottom: 24,
+    marginBottom: -24,
   },
   innerContainer: {
     padding: 8,
@@ -82,14 +84,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
   },
-  backgroundImage: {
-  },
-  cardTitle: {
-    color: 'white',
-    fontSize: 32,
-  },
   title: {
-    fontSize: 24,
+    fontSize: 16,
+    height: 40,
   },
   subTitle: {
     color: '#89888E',

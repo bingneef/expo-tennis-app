@@ -1,8 +1,7 @@
 import React from 'react'
 import { Platform, StatusBar, StyleSheet, View } from 'react-native'
-import { AppLoading, Asset, Font } from 'expo'
+import { AppLoading, Asset, Font, Constants } from 'expo'
 import { Ionicons } from '@expo/vector-icons'
-import constants from './config/constants.js'
 import RootNavigation from './navigation/RootNavigation'
 
 import ApolloClient, { createNetworkInterface } from 'apollo-client'
@@ -10,13 +9,15 @@ import { ApolloProvider, graphql } from 'react-apollo'
 
 import {SubscriptionClient, addGraphQLSubscriptions} from 'subscriptions-transport-ws'
 
-const wsClient = new SubscriptionClient(`ws://${constants.serverUrl}/subscriptions`, {
+const env = Constants.manifest.extra.env
+const wsClient = new SubscriptionClient(`ws://${env.serverUrl}/subscriptions`, {
   reconnect: true
 })
 
 // Create a normal network interface:
+console.log(`http://${env.serverUrl}/graphql`)
 const networkInterface = createNetworkInterface({
-  uri: `http://${constants.serverUrl}/graphql`
+  uri: `http://${env.serverUrl}/graphql`
 })
 
 networkInterface.use([{

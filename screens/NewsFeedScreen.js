@@ -11,7 +11,7 @@ import {
   Image,
 } from 'react-native'
 import Carousel from 'react-native-snap-carousel'
-import { Title, SubTitle, SectionTitle } from '../components/StyledText'
+import { Title, SubTitle, SectionTitle, SFText } from '../components/StyledText'
 import Card from '../components/card'
 import ListItem from '../components/listItem'
 import { Unauthorized, Unknown } from '../components/errors'
@@ -21,41 +21,80 @@ import { NavigationActions } from 'react-navigation'
 import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
 
+const limit = 10
+
 @graphql(gql`
-  query {
+  query($favPlayer: String!, $cursor: Int) {
     featured:newsItems(featured: true) {
-      id
-      title
-      image {
-        url
+      feed {
+        id
+        title
+        image {
+          url
+        }
+        tags
+        pubDateTimestamp
       }
-      tags
     },
-    tennis:newsItems(tag: "tennis") {
-      id
-      title
-      image {
-        url
+    favPlayer:newsItems(tag: $favPlayer) {
+      feed {
+        id
+        title
+        image {
+          url
+        }
+        tags
+        pubDateTimestamp
       }
-      tags
-      excerpt(size: 200)
     },
-    favPlayer:newsItems(tag: "nadal") {
-      id
-      title
-      image {
-        url
+    newsItems:newsItems(cursor: $cursor, limit: ${limit}, notTag: $favPlayer) {
+      feed {
+        id
+        title
+        image {
+          url
+        }
+        pubDateTimestamp
       }
-      tags
+      totalCount
     },
   }
 `, {
   options: props => ({
     variables: {
-      featured: true,
+      favPlayer: 'nadal',
+      cursor: 0,
     },
-    fetchPolicy: 'network-only',
-  })
+    fetchPolicy: 'cache-and-network',
+  }),
+  props({ data: { loading, featured, favPlayer, newsItems, fetchMore, refetch } }) {
+    return {
+      loading,
+      newsItems,
+      featured,
+      favPlayer,
+      refetch,
+      loadMoreNewsItems() {
+        return fetchMore({
+          variables: {
+            cursor: newsItems.feed.length,
+          },
+          updateQuery: (previousResult, { fetchMoreResult }) => {
+            if (!fetchMoreResult) { return previousResult }
+
+            const feed = [...previousResult.newsItems.feed, ...fetchMoreResult.newsItems.feed]
+
+            return Object.assign({}, previousResult, {
+              newsItems: {
+                ...previousResult.newsItems,
+                feed,
+              },
+            })
+          },
+        })
+      }
+    }
+  },
 })
 export default class NewsFeedScreen extends React.Component {
   static navigationOptions = {
@@ -66,16 +105,22 @@ export default class NewsFeedScreen extends React.Component {
     super(props)
     this.state = {
       refreshing: false,
+      loadingMore: false,
     }
 
     this.todayString = this.todayString.bind(this)
     this.navigateToItem = this.navigateToItem.bind(this)
     this._renderCard = this._renderCard.bind(this)
     this._onRefresh = this._onRefresh.bind(this)
+    this._onloadMore = this._onRefresh.bind(this)
   }
 
   todayString () {
     return moment().format('MMMM Do YYYY')
+  }
+
+  dateString (date) {
+    return moment(date).format('MMMM Do YYYY')
   }
 
   navigateToItem (id) {
@@ -120,27 +165,33 @@ export default class NewsFeedScreen extends React.Component {
   _renderCard ({item, index}) {
     return (
       <TouchableOpacity style={{width: Dimensions.get('window').width - 48}} key={item.id} activeOpacity={0.8} onPress={() => this.navigateToItem(item.id)}>
-        <Card title={item.title} superTitle={this.tagLine(item)} subTitle={this.todayString()} source={{uri: item.image.url}} />
+        <Card title={item.title} superTitle={this.tagLine(item)} subTitle={this.dateString(item.pubDateTimestamp)} source={{uri: item.image.url}} />
       </TouchableOpacity>
     )
   }
 
-  _renderListItem ({data, index}) {
+  _renderListItem ({item, index}) {
     return (
-      <TouchableOpacity key={data.id} activeOpacity={0.8} onPress={() => this.navigateToItem(data.id)}>
-        <ListItem key={ index } title={data.title} superTitle={this.tagLine(data)} content={data.excerpt} source={{uri: data.image.url}} />
+      <TouchableOpacity key={item.id} activeOpacity={0.8} onPress={() => this.navigateToItem(item.id)}>
+        <ListItem key={ index } title={item.title} content={this.dateString(item.pubDateTimestamp)} source={{uri: item.image.url}} />
       </TouchableOpacity>
     )
   }
 
   async _onRefresh () {
     this.setState({refreshing: true})
-    await this.props.data.refetch()
+    await this.props.refetch({cursor: 0})
     this.setState({refreshing: false})
   }
 
+  async _loadMore () {
+    this.setState({loadingMore: true})
+    await this.props.loadMoreNewsItems()
+    this.setState({loadingMore: false})
+  }
+
   render() {
-    if (this.props.data.loading) {
+    if (this.props.loading && !this.state.loadingMore && !this.props.featured) {
       return (
         <View>
           <ActivityIndicator
@@ -152,8 +203,8 @@ export default class NewsFeedScreen extends React.Component {
       )
     }
 
-    if (this.props.data.error) {
-      const message = this.props.data.error.message == 'GraphQL error: UNAUTHORIZED' ? 'You are not authorized.' : 'An unknown error occured. Nothing we can do.'
+    if (this.props.error) {
+      const message = this.props.error.message == 'GraphQL error: UNAUTHORIZED' ? 'You are not authorized.' : 'An unknown error occured. Nothing we can do.'
       return (
         <View style={[styles.container, styles.errorsContainer]}>
           <Title>ERROR</Title>
@@ -177,27 +228,56 @@ export default class NewsFeedScreen extends React.Component {
 
         <View style={[styles.section, styles.sectionContainer]}>
           {
-            this._renderCard({item: this.props.data.featured[0], index: 0})
+            this._renderCard({item: this.props.featured.feed[0], index: 0})
           }
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.sectionContainer}>
-            <SectionTitle>Nadal</SectionTitle>
-          </View>
-          <View>
-            {
-              this._renderSlider({data: this.props.data.favPlayer, ref: this._carousel})
-            }
-          </View>
-        </View>
+        {
+          this.props.favPlayer.feed.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionContainer}>
+                <SectionTitle>Nadal</SectionTitle>
+              </View>
+              <View>
+                {
+                  this._renderSlider({data: this.props.favPlayer.feed, ref: this._carousel})
+                }
+              </View>
+            </View>
+          )
+        }
+        {
+          this.props.newsItems.feed.length > 0 && (
+            <View style={[styles.section, styles.sectionContainer]}>
+              <SectionTitle>Other news</SectionTitle>
+              {
+                this.props.newsItems.feed.map((item, index) => this._renderListItem({item, index}))
+              }
+            </View>
 
-        <View style={[styles.section, styles.sectionContainer]}>
-          <SectionTitle>Other news</SectionTitle>
-          {
-            this.props.data.tennis.map((data, index) => this._renderListItem({data, index}))
-          }
-        </View>
+          )
+        }
+        {
+          this.props.newsItems.totalCount !==  this.props.newsItems.feed.length && (
+            <View style={[styles.section, styles.sectionContainer]}>
+              {
+                this.state.loadingMore ? (
+                  <ActivityIndicator
+                    animating={ true }
+                    size="large"
+                  />
+                ) : (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={this._loadMore.bind(this)} >
+                  <SFText style={{fontSize: 20}}>Load more..</SFText>
+                </TouchableOpacity>
+                )
+              }
+            </View>
+          )
+        }
+
         <View style={{paddingBottom: 24}} />
       </ScrollView>
     )

@@ -9,19 +9,23 @@ import MatchCenterScreen from '../screens/MatchCenterScreen'
 import AccountScreen from '../screens/AccountScreen'
 import NewsFeedScreen from '../screens/NewsFeedScreen'
 import LiveScreen from '../screens/LiveScreen'
+import ResultsScreen from '../screens/ResultsScreen'
 import NewsFeedNavigation from './NewsFeedNavigation'
 
 export default TabNavigator(
   {
-    MatchCenter: {
-      screen: MatchCenterScreen,
-    },
+    // MatchCenter: {
+    //   screen: MatchCenterScreen,
+    // },
     NewsFeed: {
       screen: NewsFeedNavigation,
     },
-    Live: {
-      screen: LiveScreen,
+    Results: {
+      screen: ResultsScreen,
     },
+    // Live: {
+    //   screen: LiveScreen,
+    // },
     Account: {
       screen: AccountScreen,
     },
@@ -52,6 +56,11 @@ export default TabNavigator(
             iconName = Platform.OS === 'ios'
               ? `ios-analytics${focused ? '' : '-outline'}`
               : 'md-analytics'
+            break
+          case 'Results':
+            iconName = Platform.OS === 'ios'
+              ? `ios-basketball${focused ? '' : '-outline'}`
+              : 'md-basketball'
             break
         }
         return (
