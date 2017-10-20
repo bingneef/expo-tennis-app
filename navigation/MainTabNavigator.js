@@ -14,18 +14,12 @@ import NewsFeedNavigation from './NewsFeedNavigation'
 
 export default TabNavigator(
   {
-    // MatchCenter: {
-    //   screen: MatchCenterScreen,
-    // },
     NewsFeed: {
       screen: NewsFeedNavigation,
     },
     Results: {
       screen: ResultsScreen,
     },
-    // Live: {
-    //   screen: LiveScreen,
-    // },
     Account: {
       screen: AccountScreen,
     },

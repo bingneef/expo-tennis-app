@@ -10,26 +10,33 @@ import {
   RefreshControl,
   Image,
 } from 'react-native'
+import { connect } from 'react-redux'
+import { NavigationActions } from 'react-navigation'
 import Carousel from 'react-native-snap-carousel'
 import { Title, SubTitle, SectionTitle, SFText } from '../components/StyledText'
 import Card from '../components/card'
 import ListItem from '../components/listItem'
 import { Unauthorized, Unknown } from '../components/errors'
 import moment from 'moment'
-import { NavigationActions } from 'react-navigation'
+import s from 'underscore.string'
 
 import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
 
 const limit = 10
 
+@connect(
+  state => ({
+    settings: state.settings
+  })
+)
 @graphql(gql`
   query($favPlayer: String!, $cursor: Int) {
     featured:newsItems(featured: true) {
       feed {
         id
         title
-        image {
+        image:imageSized {
           url
         }
         tags
@@ -40,7 +47,7 @@ const limit = 10
       feed {
         id
         title
-        image {
+        image:imageSized {
           url
         }
         tags
@@ -51,7 +58,7 @@ const limit = 10
       feed {
         id
         title
-        image {
+        image:imageSized(size: "square-sm") {
           url
         }
         pubDateTimestamp
@@ -60,13 +67,20 @@ const limit = 10
     },
   }
 `, {
-  options: props => ({
-    variables: {
-      favPlayer: 'nadal',
-      cursor: 0,
-    },
-    fetchPolicy: 'cache-and-network',
-  }),
+  options: props => {
+    let favPlayer = 'bogus'
+    try {
+      favPlayer = props.settings.player || favPlayer
+    } catch (e) { }
+
+    return {
+      variables: {
+        favPlayer,
+        cursor: 0,
+      },
+      fetchPolicy: 'network-only',
+    }
+  },
   props({ data: { loading, featured, favPlayer, newsItems, fetchMore, refetch } }) {
     return {
       loading,
@@ -258,7 +272,7 @@ export default class NewsFeedScreen extends React.Component {
           this.props.favPlayer.feed.length > 0 && (
             <View style={styles.section}>
               <View style={styles.sectionContainer}>
-                <SectionTitle>Nadal</SectionTitle>
+                <SectionTitle>{ s.humanize(this.props.settings.player) }</SectionTitle>
               </View>
               <View>
                 {

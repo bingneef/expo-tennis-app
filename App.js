@@ -3,13 +3,21 @@ import { Platform, StatusBar, StyleSheet, View } from 'react-native'
 import { AppLoading, Asset, Font, Constants } from 'expo'
 import { Ionicons } from '@expo/vector-icons'
 import RootNavigation from './navigation/RootNavigation'
+import { NavigationActions } from 'react-navigation'
 
 import ApolloClient, { createNetworkInterface } from 'apollo-client'
 import { ApolloProvider, graphql } from 'react-apollo'
-
+import { Provider } from 'react-redux'
+import Sentry from 'sentry-expo'
+import ErrorBoundary from './components/ErrorBoundary'
+import store from './store'
 import {SubscriptionClient, addGraphQLSubscriptions} from 'subscriptions-transport-ws'
 
 const env = Constants.manifest.extra.env
+
+Sentry.enableInExpoDevelopment = true
+Sentry.config(env.sentry.token).install();
+
 const wsClient = new SubscriptionClient(`ws://${env.serverUrl}/subscriptions`, {
   reconnect: true
 })
@@ -20,15 +28,31 @@ const networkInterface = createNetworkInterface({
 })
 
 networkInterface.use([{
-  applyMiddleware(req, next) {
+  async applyMiddleware(req, next) {
     if (!req.options.headers) {
       req.options.headers = {}
     }
-    const token = 'testtest'
-    req.options.headers['x-auth'] = token
+    const token = await Expo.SecureStore.getItemAsync('UserStore.token')
+    if (token) {
+      req.options.headers['x-auth'] = token
+    }
     next()
   }
 }])
+
+networkInterface.useAfter([{
+  async applyAfterware({ response }, next) {
+    try {
+      const body = JSON.parse(response._bodyText)
+      if (body.errors.filter(error => error.message == 'UNAUTHORIZED').length > 0) {
+        await Expo.SecureStore.deleteItemAsync('UserStore.token')
+
+        // FIXME: Tell user about issue
+      }
+    } catch (e) { }
+    next();
+  }
+}]);
 
 // Extend the network interface with the WebSocket
 const networkInterfaceWithSubscriptions = addGraphQLSubscriptions(
@@ -45,7 +69,7 @@ export default class App extends React.Component {
     assetsAreLoaded: false,
   }
 
-  componentWillMount() {
+  async componentWillMount () {
     this._loadAssetsAsync()
   }
 
@@ -54,14 +78,18 @@ export default class App extends React.Component {
       return <AppLoading />
     } else {
       return (
-        <ApolloProvider client={client}>
-          <View style={styles.container}>
-            {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-            {Platform.OS === 'android' &&
-              <View style={styles.statusBarUnderlay} />}
-            <RootNavigation />
-          </View>
-        </ApolloProvider>
+        <Provider store={store}>
+          <ErrorBoundary>
+            <ApolloProvider client={client}>
+              <View style={styles.container}>
+                {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+                {Platform.OS === 'android' &&
+                  <View style={styles.statusBarUnderlay} />}
+                <RootNavigation />
+              </View>
+            </ApolloProvider>
+          </ErrorBoundary>
+        </Provider>
       )
     }
   }
@@ -70,7 +98,7 @@ export default class App extends React.Component {
     try {
       await Promise.all([
         Asset.loadAsync([
-          // require('./assets/images/robot-dev.png'),
+          require('./assets/images/spaceballs-bg.jpg'),
         ]),
         Font.loadAsync([
           Ionicons.font,
@@ -97,10 +125,10 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'white',
   },
   statusBarUnderlay: {
     height: 24,
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: 'white',
   },
 })

@@ -14,18 +14,37 @@
       "color": "#000000"
     },
     "loading": {
-      "icon": "./assets/icons/loading-icon.png",
-      "hideExponentText": true
+      "hideExponentText": true,
     },
     "packagerOpts": {
       "assetExts": ["ttf"]
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.snowflakeapps.tennis"
+    },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "snowflake-apps",
+            "project": "tennis",
+            "authToken": "6bdbf52f692c469bafb24dd2fd17db6147c64025d9fd40d092e4a5d59418c589"
+          }
+        }
+      ]
     },
     "extra": {
       "env": {
-        "serverUrl": "5.157.85.46:4000"
+        "serverUrl": "localhost:4000",
+        "sentry": {
+          "token": "https://7778495ca43847588e2cdc203760f267:010ff9e3bd874173b6f22d5a8414b797@sentry.io/233052"
+        },
+        "googleOAuth": {
+          "ios": "935547163835-bcknd46qgt2s3hdqf6dd4it12fs3138u.apps.googleusercontent.com",
+          "android": "935547163835-rmu99ed9iv6kqeco630jdhalde3k110o.apps.googleusercontent.com"
+        }
       }
     }
   }
