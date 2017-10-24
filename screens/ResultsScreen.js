@@ -10,14 +10,14 @@ import s from 'underscore.string'
 import moment from 'moment'
 import { Title, SubTitle, SFText } from '../components/StyledText'
 import Card from '../components/matchCard'
-
+import { Ionicons } from '@expo/vector-icons'
 
 import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
 
 @graphql(gql`
-  query {
-    matches:apiMatches {
+  query($tournamentId: String) {
+    matches:apiMatches(tournamentId: $tournamentId) {
       id
       status
       matchStatus
@@ -28,6 +28,12 @@ import gql from 'graphql-tag'
         name
         kind
         gender
+      }
+      venue {
+        name
+      }
+      round {
+        name
       }
       season {
         year
@@ -46,7 +52,9 @@ import gql from 'graphql-tag'
   }
 `, {
   options: props => ({
-    variables: { },
+    variables: {
+      tournamentId: props.navigation.state.params.tournamentId
+    },
     fetchPolicy: 'network-only',
   })
 })
@@ -71,7 +79,11 @@ export default class ResultsScreen extends React.Component {
   }
 
   subTitle (match) {
-    return `${s(match.tournament.gender).capitalize().value()}'s ${s(match.tournament.kind).capitalize().value()} • Round 2`
+    let str = `${s(match.tournament.gender).capitalize().value()}'s ${s(match.tournament.kind).capitalize().value()}`
+    if (match.round && match.round.name) {
+      str = `${str}  • ${s(match.round.name).capitalize().value()}`
+    }
+    return str
   }
 
   todayString () {
@@ -79,7 +91,7 @@ export default class ResultsScreen extends React.Component {
   }
 
   render() {
-    if (this.props.data.loading) {
+    if (this.props.data.loading && !this.state.refreshing) {
       return (
         <View style={styles.container}>
           <ActivityIndicator
@@ -99,17 +111,26 @@ export default class ResultsScreen extends React.Component {
         />}>
         <View style={[styles.section, styles.sectionContainer]}>
           <SubTitle>{this.todayString().toUpperCase()}</SubTitle>
-          <Title>Results</Title>
+          <View style={{display: 'flex', flexDirection: 'row',}}>
+            <Ionicons
+              name='ios-arrow-back'
+              size={35}
+              style={{paddingRight: 12, marginTop: 2}}
+              onPress={() => this.props.navigation.goBack() }/>
+            <Title>Results</Title>
+          </View>
         </View>
         {
           this.props.data.matches.map(match => {
             const homePlayer = match.competitors.filter(item => item.team == 'home')[0]
             const awayPlayer = match.competitors.filter(item => item.team == 'away')[0]
+            const venue = match.venue ? match.venue.name : 'COURT UNKNOWN'
+
             return (
               <View key={match.id}>
                 <Card
                   style={styles.cardStyle}
-                  title="PHILLIPE-CHARTRIER COURT"
+                  title={venue}
                   subTitle={ this.subTitle(match) }
                   sets={ match.periodScores }
                   homePlayerName={ `${homePlayer.name} (${homePlayer.countryCode})` }
@@ -131,6 +152,5 @@ const styles = StyleSheet.create({
   },
   cardStyle: {
     marginBottom: 12,
-    overflow: 'visible',
   }
 })

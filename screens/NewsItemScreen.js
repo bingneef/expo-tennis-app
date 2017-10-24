@@ -104,13 +104,15 @@ export default class NewsItemScreen extends React.Component {
     if (newsItem && newsItem.match && newsItem.match.id) {
       try {
         title = newsItem.match.venue.name
-      } catch (e) { title = 'Centre Court' }
+      } catch (e) { title = 'UNKNOWN COURT' }
       homePlayer = newsItem.match.competitors.filter(item => item.team == 'home')[0]
       awayPlayer = newsItem.match.competitors.filter(item => item.team == 'away')[0]
 
       subTitle = `${s(newsItem.match.tournament.gender).capitalize().value()}'s ${s(newsItem.match.tournament.kind).capitalize().value()}`
       try {
-        subTitle += ` • ${ s.humanize(newsItem.match.round.name) }`
+        if (newsItem.match.round.name) {
+          subTitle += ` • ${ s.humanize(newsItem.match.round.name) }`
+        }
       } catch (e) { }
     }
 

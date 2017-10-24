@@ -37,7 +37,7 @@
     },
     "extra": {
       "env": {
-        "serverUrl": "5.157.85.46:4000",
+        "serverUrl": "localhost",
         "sentry": {
           "token": "https://7778495ca43847588e2cdc203760f267:010ff9e3bd874173b6f22d5a8414b797@sentry.io/233052"
         },

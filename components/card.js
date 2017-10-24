@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     flex: 1,
-    height: 160,
+    height: 200,
     backgroundColor: 'transparent',
     display: 'flex',
     flexDirection: 'column',

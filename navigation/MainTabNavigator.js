@@ -5,12 +5,14 @@ import { TabNavigator, TabBarBottom } from 'react-navigation'
 
 import Colors from '../constants/Colors'
 
-import MatchCenterScreen from '../screens/MatchCenterScreen'
+// import MatchCenterScreen from '../screens/MatchCenterScreen'
 import AccountScreen from '../screens/AccountScreen'
 import NewsFeedScreen from '../screens/NewsFeedScreen'
-import LiveScreen from '../screens/LiveScreen'
+// import LiveScreen from '../screens/LiveScreen'
 import ResultsScreen from '../screens/ResultsScreen'
 import NewsFeedNavigation from './NewsFeedNavigation'
+import AccountNavigation from './AccountNavigation'
+import ResultNavigation from './ResultNavigation'
 
 export default TabNavigator(
   {
@@ -18,10 +20,10 @@ export default TabNavigator(
       screen: NewsFeedNavigation,
     },
     Results: {
-      screen: ResultsScreen,
+      screen: ResultNavigation,
     },
     Account: {
-      screen: AccountScreen,
+      screen: AccountNavigation,
     },
   },
   {
@@ -71,5 +73,6 @@ export default TabNavigator(
     tabBarPosition: 'bottom',
     animationEnabled: false,
     swipeEnabled: false,
+    initialRouteName: 'NewsFeed',
   }
 )

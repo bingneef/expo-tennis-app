@@ -68,9 +68,9 @@ const limit = 10
   }
 `, {
   options: props => {
-    let favPlayer = 'bogus'
+    let favPlayer = 'nadal'
     try {
-      favPlayer = props.settings.player || favPlayer
+      favPlayer = props.settings.favPlayer || favPlayer
     } catch (e) { }
 
     return {
@@ -190,7 +190,7 @@ export default class NewsFeedScreen extends React.Component {
           enableMomentum={true}
           decelerationRate='fast'
           enableSnap={true}
-          containerCustomStyle={{paddingLeft: 24}}
+          containerCustomStyle={{paddingLeft: 24, paddingBottom: 24,}}
           slideStyle={{paddingRight: 12}}
           activeSlideAlignment='start'
           inactiveSlideOpacity={1.0}
@@ -200,9 +200,10 @@ export default class NewsFeedScreen extends React.Component {
   }
 
   _renderCard ({item, index}) {
+    const uri = item.image ? item.image.url : ''
     return (
       <TouchableOpacity style={{width: Dimensions.get('window').width - 48}} key={item.id} activeOpacity={0.8} onPress={() => this.navigateToItem(item.id)}>
-        <Card title={item.title} superTitle={this.tagLine(item)} subTitle={this.dateString(item.pubDateTimestamp)} source={{uri: item.image.url}} />
+        <Card title={item.title} superTitle={this.tagLine(item)} subTitle={this.dateString(item.pubDateTimestamp)} source={{uri}} />
       </TouchableOpacity>
     )
   }
@@ -270,9 +271,9 @@ export default class NewsFeedScreen extends React.Component {
 
         {
           this.props.favPlayer.feed.length > 0 && (
-            <View style={styles.section}>
+            <View>
               <View style={styles.sectionContainer}>
-                <SectionTitle>{ s.humanize(this.props.settings.player) }</SectionTitle>
+                <SectionTitle>{ s.humanize(this.props.settings.favPlayer) }</SectionTitle>
               </View>
               <View>
                 {

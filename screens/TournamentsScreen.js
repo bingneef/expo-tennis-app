@@ -6,8 +6,9 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  RefreshControl,
 } from 'react-native'
-import { Button, List, ListItem } from 'react-native-elements'
+import { List, ListItem, SearchBar } from 'react-native-elements'
 import { NavigationActions } from 'react-navigation'
 import ModalPicker from 'react-native-modal-selector'
 import { SFText, Title, SubTitle } from '../components/StyledText'
@@ -34,9 +35,10 @@ const list = [
 
 @graphql(gql`
   query {
-    currentUser{
-      givenName
-      photoUrl
+    tournaments:apiTournaments{
+      id
+      externalId
+      name
     }
   }
 `, {
@@ -60,45 +62,56 @@ export default class HomeScreen extends React.Component {
 
   constructor(props) {
     super(props)
-    this.logout = this.logout.bind(this)
-    this.gotoSettingsItem = this.gotoSettingsItem.bind(this)
-  }
-
-  async logout () {
-    await Expo.SecureStore.deleteItemAsync('UserStore.token')
-    const resetAction = NavigationActions.reset({
-      index: 0,
-      actions: [
-        NavigationActions.navigate({ routeName: 'Register'})
-      ]
-    })
-    this.props.navigation.dispatch(resetAction)
-  }
-
-  savePlayerToSettings (player) {
-    const settings = {
-      ...this.props.settings,
-      player,
+    this.state = {
+      search: '',
+      refreshing: false,
     }
-    this.saveSettings(settings)
+
+    this.gotoTournament = this.gotoTournament.bind(this)
+    this.setSearch = this.setSearch.bind(this)
+    this._onRefresh = this._onRefresh.bind(this)
   }
 
-  saveSettings (settings) {
-    this.props.setSettings(settings)
+  setSearch (value) {
+    this.setState({
+      search: value,
+    })
   }
 
-  gotoSettingsItem (key) {
+  gotoTournament (tournamentId) {
     const actionToDispatch = NavigationActions.navigate({
-      routeName: 'SettingsItem',
+      routeName: 'Results',
       params: {
-        key
+        tournamentId
       }
     })
     this.props.navigation.dispatch(actionToDispatch)
   }
 
+  tournamentTitle (value) {
+    try {
+      return value.split(',')[0].trim()
+    } catch (e) {
+      return value
+    }
+  }
+
+  tournamentSubTitle (value) {
+    try {
+      return value.split(',')[1].trim()
+    } catch (e) {
+      return null
+    }
+  }
+
+  async _onRefresh () {
+    this.setState({refreshing: true})
+    await this.props.data.refetch()
+    this.setState({refreshing: false})
+  }
+
   render() {
-    if (this.props.data.loading) {
+    if (this.props.data.loading && !this.state.refreshing) {
       return (
         <View>
           <ActivityIndicator
@@ -111,43 +124,42 @@ export default class HomeScreen extends React.Component {
     }
 
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainerStyle}>
+      <ScrollView style={styles.container} refreshControl={
+        <RefreshControl
+          refreshing={this.state.refreshing}
+          onRefresh={this._onRefresh}
+        />}>
         <View style={[styles.section, styles.sectionContainer]}>
           <SubTitle />
-          <View style={styles.titleContainer}>
-            <View>
-              <Title>{this.props.data.currentUser.givenName}</Title>
-              <SubTitle>ACCOUNT & APP SETTINGS</SubTitle>
-            </View>
-            <Image
-              style={styles.avatar}
-              source={{uri: this.props.data.currentUser.photoUrl}}/>
-          </View>
+          <Title>Tournaments</Title>
         </View>
-        <View style={[styles.section, styles.sectionContainer, {flex: 1}]}>
+        <View style={[styles.section]}>
+          <SearchBar
+            lightTheme
+            containerStyle={{backgroundColor: 'transparent', borderWidth: 0}}
+            inputStyle={{backgroundColor: 'transparent', borderWidth: 0}}
+            onChangeText={this.setSearch}
+            autoCorrect={false}
+            placeholder='Search tournament' />
           <List style={{borderWidth: 0}}>
             {
-              list.map((item, i) => (
+              this.props.data.tournaments
+              .filter(item => item.name.toLowerCase().indexOf(this.state.search.toLowerCase()) > -1)
+              .map((item, i) => (
                 <TouchableOpacity
-                  onPress={() => this.gotoSettingsItem(item.key)}
+                  onPress={() => this.gotoTournament(item.id)}
                   key={i}>
                   <ListItem
-                    title={item.title}
+                    title={this.tournamentTitle(item.name)}
+                    subtitle={this.tournamentSubTitle(item.name)}
                     titleStyle={styles.titleStyle}
-                    rightIcon={<Ionicons name={item.icon} size={32} />}
+                    subtitleStyle={styles.subTitleStyle}
+                    rightIcon={<Ionicons name='ios-arrow-forward' size={32} />}
                     style={styles.listItem} />
                 </TouchableOpacity>
               ))
             }
           </List>
-        </View>
-        <View style={[styles.section, styles.sectionContainer]}>
-          <Button
-            buttonStyle={{backgroundColor: 'red'}}
-            textStyle={{textAlign: 'center'}}
-            containerViewStyle={{width: '100%', marginLeft: 0}}
-            title={`Logout`}
-            onPress={() => this.logout()} />
         </View>
       </ScrollView>
     )
@@ -158,6 +170,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
     paddingTop: 24,
+    paddingBottom: 24,
     flex: 1,
     display: 'flex',
   },
@@ -180,14 +193,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
   listItem: {
     paddingTop: 12,
     paddingBottom: 12,
+    paddingRight: 12,
     borderTopWidth: 1,
     borderBottomWidth: 1,
     marginTop: -1,
@@ -197,6 +206,10 @@ const styles = StyleSheet.create({
   },
   titleStyle: {
     fontFamily: 'sf-pro',
-    fontSize: 18,
+    fontSize: 16,
+  },
+  subTitleStyle: {
+    fontFamily: 'sf-pro',
+    fontSize: 10,
   },
 })

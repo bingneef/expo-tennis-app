@@ -1,31 +1,5 @@
-import React from 'react';
-import { Text, StyleSheet } from 'react-native';
-
-export class MonoText extends React.Component {
-  render() {
-    return (
-      <Text
-        {...this.props}
-        style={[this.props.style, { fontFamily: 'space-mono' }]}
-      />
-    );
-  }
-}
-
-export class SansText extends React.Component {
-  render() {
-    let fontFamily = 'open-sans'
-    if (this.props.bold) {
-      fontFamily = 'open-sans-bold'
-    }
-    return (
-      <Text
-        {...this.props}
-        style={[this.props.style, { fontFamily }]}
-      />
-    );
-  }
-}
+import React from 'react'
+import { Text, StyleSheet } from 'react-native'
 
 export class SFText extends React.Component {
   render() {
@@ -39,7 +13,7 @@ export class SFText extends React.Component {
         {...this.props}
         style={style}
       />
-    );
+    )
   }
 }
 
@@ -50,7 +24,7 @@ export class Title extends React.Component {
         {...this.props}
         style={[styles.title, this.props.style]}
       />
-    );
+    )
   }
 }
 
@@ -61,7 +35,7 @@ export class SubTitle extends React.Component {
         {...this.props}
         style={[styles.subTitle, this.props.style]}
       />
-    );
+    )
   }
 }
 
@@ -72,13 +46,13 @@ export class SectionTitle extends React.Component {
         {...this.props}
         style={[styles.sectionTitle, this.props.style]}
       />
-    );
+    )
   }
 }
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 42,
+    fontSize: 32,
     fontFamily: 'sf-pro-black',
     color: '#0F0F0F',
   },
@@ -88,7 +62,7 @@ const styles = StyleSheet.create({
     color: '#99999B',
   },
   sectionTitle: {
-    fontSize: 26,
+    fontSize: 22,
     fontFamily: 'sf-pro-black',
     color: '#0F0F0F',
   },

@@ -7,7 +7,7 @@ import {
   Platform,
 } from 'react-native'
 import {
-  SansText,
+  SFText,
 } from './../StyledText'
 import { Ionicons } from '@expo/vector-icons';
 import { List, ListItem } from 'react-native-elements'
@@ -33,12 +33,12 @@ export default class PlayerRow extends React.Component {
   render() {
     return (
       <View style={ styles.container }>
-        <SansText bold={ this.props.playerWon } style={ styles.playerNameCol }>{ this.props.name }</SansText>
+        <SFText bold={ this.props.playerWon } style={ styles.playerNameCol }>{ this.props.name }</SFText>
         {
           this.props.playerWon ? (
             <Ionicons style={styles.gameScoreCol} name="ios-checkmark" size={16} color="green" />
           ) : (
-          <SansText style={styles.gameScoreCol}>{ this.props.currentGameScore}</SansText>
+          <SFText style={styles.gameScoreCol}>{ this.props.currentGameScore}</SFText>
           )
         }
         {
@@ -67,14 +67,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'red'
   },
   gameScoreCol: {
-    fontFamily: 'open-sans-bold',
+    fontFamily: 'sf-pro-bold',
     width: 32,
     textAlign: 'center',
     color: '#555555',
   },
   setCol: {
     color: '#555555',
-    fontFamily: 'open-sans-bold',
+    fontFamily: 'sf-pro-bold',
     width: 32,
     textAlign: 'center',
     color: '#555555',
