@@ -18,7 +18,7 @@ export default class SettingsNotifications extends React.Component {
 
   setNewsAlerts (value) {
     const notifications = {
-      ...this.props.notifications,
+      ...this.state.notifications,
       newsAlerts: value,
     }
 
@@ -31,7 +31,7 @@ export default class SettingsNotifications extends React.Component {
 
   setGameAlerts (value) {
     const notifications = {
-      ...this.props.notifications,
+      ...this.state.notifications,
       gameAlerts: value,
     }
 

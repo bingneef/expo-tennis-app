@@ -12,6 +12,10 @@ const store = new Store(
     user: {},
     settings: {
       favPlayer: 'bogus',
+      notifications: {
+        newsAlerts: false,
+        gameAlerts: false,
+      },
     },
   },
 )
