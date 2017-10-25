@@ -31,37 +31,35 @@ const limit = 10
   })
 )
 @graphql(gql`
+  fragment newsItemInfo on NewsItem {
+    id
+    title
+    tags
+    pubDateTimestamp
+  }
   query($favPlayer: String!, $cursor: Int) {
     featured:newsItems(featured: true) {
       feed {
-        id
-        title
         image:imageSized {
           url
         }
-        tags
-        pubDateTimestamp
+        ...newsItemInfo
       }
     },
     favPlayer:newsItems(tag: $favPlayer) {
       feed {
-        id
-        title
         image:imageSized {
           url
         }
-        tags
-        pubDateTimestamp
+        ...newsItemInfo
       }
     },
     newsItems:newsItems(cursor: $cursor, limit: ${limit}, notTag: $favPlayer) {
       feed {
-        id
-        title
         image:imageSized(size: "square-sm") {
           url
         }
-        pubDateTimestamp
+        ...newsItemInfo
       }
       totalCount
     },

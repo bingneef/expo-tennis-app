@@ -22,6 +22,6 @@ const AccountStackNavigator = StackNavigator(
 
 export default class AccountNavigator extends React.Component {
   render() {
-    return <AccountStackNavigator />
+    return <AccountStackNavigator screenProps={this.props.screenProps} />
   }
 }

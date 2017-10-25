@@ -14,7 +14,7 @@ import NewsFeedNavigation from './NewsFeedNavigation'
 import AccountNavigation from './AccountNavigation'
 import ResultNavigation from './ResultNavigation'
 
-export default TabNavigator(
+export const Navigator = TabNavigator(
   {
     NewsFeed: {
       screen: NewsFeedNavigation,
@@ -76,3 +76,9 @@ export default TabNavigator(
     initialRouteName: 'NewsFeed',
   }
 )
+
+export default class MainTabNavigator extends React.Component {
+  render() {
+    return <Navigator screenProps={{rootNavigator: this.props.navigation}} />
+  }
+}

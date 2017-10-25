@@ -21,7 +21,12 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.snowflakeapps.tennis"
+      "bundleIdentifier": "com.snowflakeapps.tennis",
+      "config": {
+        "googleSignIn": {
+          "reservedClientId": "com.googleusercontent.apps.856409384233-alk468jdg72oj8vr1o5n9untqbpjhdli"
+        }
+      }
     },
     "hooks": {
       "postPublish": [
@@ -43,6 +48,7 @@
         },
         "googleOAuth": {
           "ios": "935547163835-bcknd46qgt2s3hdqf6dd4it12fs3138u.apps.googleusercontent.com",
+          "iosStandalone": "856409384233-alk468jdg72oj8vr1o5n9untqbpjhdli.apps.googleusercontent.com",
           "android": "935547163835-rmu99ed9iv6kqeco630jdhalde3k110o.apps.googleusercontent.com"
         }
       }

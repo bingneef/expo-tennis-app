@@ -7,26 +7,28 @@ import {
 } from 'react-native'
 import { Button } from 'react-native-elements'
 import { NavigationActions } from 'react-navigation'
-import { graphql } from 'react-apollo'
+import { graphql, withData } from 'react-apollo'
 import gql from 'graphql-tag'
 import { Constants } from 'expo'
 const env = Constants.manifest.extra.env
 
-@graphql(gql`
+const createOrUpdateUser = gql`
   mutation($user: UserInput) {
     createOrUpdateUser(user: $user){
       token
     }
   }
-`, {
-  options: props => ({
-    variables: {
-      user: null,
-    },
-    fetchPolicy: 'network-only',
-  })
-})
-export default class RegisterScreen extends React.Component {
+`
+
+const validateToken = gql`
+  mutation($token: String) {
+    validateToken(token: $token){
+      token
+    }
+  }
+`
+
+class RegisterScreen extends React.Component {
   static navigationOptions = {
     header: null,
   }
@@ -45,6 +47,7 @@ export default class RegisterScreen extends React.Component {
       const result = await Expo.Google.logInAsync({
         iosClientId: env.googleOAuth.ios,
         androidClientId: env.googleOAuth.android,
+        iosStandaloneAppClientId: env.googleOAuth.iosStandalone,
         scopes: ['profile', 'email'],
       })
 
@@ -58,7 +61,7 @@ export default class RegisterScreen extends React.Component {
           photoUrl: result.user.photoUrl,
         }
 
-        const serverResponse = await this.props.mutate({variables: { user }})
+        const serverResponse = await this.props.createOrUpdateUser({variables: { user }})
         const token = serverResponse.data.createOrUpdateUser.token
 
         await Expo.SecureStore.setItemAsync('UserStore.token', token)
@@ -86,7 +89,19 @@ export default class RegisterScreen extends React.Component {
   async componentWillMount () {
     const token = await Expo.SecureStore.getItemAsync('UserStore.token')
     if (token) {
-      this.navigateToMain()
+      try {
+        this.setState({inProgress: true})
+        const tokenResponse = await this.props.validateToken({variables: { token }})
+        if (tokenResponse.data.validateToken.token) {
+          return this.navigateToMain()
+        } else {
+          await Expo.SecureStore.deleteItemAsync('UserStore.token')
+          this.setState({initialCheckDone: true, inProgress: false})
+        }
+      } catch (e) {
+        await Expo.SecureStore.deleteItemAsync('UserStore.token')
+        this.setState({initialCheckDone: true, inProgress: false})
+      }
     } else {
       this.setState({initialCheckDone: true})
     }
@@ -144,7 +159,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    // backgroundColor: '#04A9F4',
     display: 'flex',
     justifyContent: 'flex-end',
   },
@@ -163,3 +177,23 @@ const styles = StyleSheet.create({
     marginLeft: 0,
   }
 })
+
+export default graphql(createOrUpdateUser, {
+  name : 'createOrUpdateUser',
+  options: props => ({
+    variables: {
+      user: null,
+    },
+    fetchPolicy: 'network-only',
+  })
+})(
+  graphql(validateToken, {
+    name : 'validateToken',
+    options: props => ({
+      variables: {
+        token: null,
+      },
+      fetchPolicy: 'network-only',
+    })
+  })(RegisterScreen)
+)

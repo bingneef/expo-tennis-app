@@ -42,7 +42,7 @@ const list = [
 `, {
   options: props => ({
     variables: { },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
   })
 })
 @connect(
@@ -53,7 +53,7 @@ const list = [
     setSettings,
   }
 )
-export default class HomeScreen extends React.Component {
+export default class AccountScreen extends React.Component {
   static navigationOptions = {
     header: null,
   }
@@ -72,7 +72,8 @@ export default class HomeScreen extends React.Component {
         NavigationActions.navigate({ routeName: 'Register'})
       ]
     })
-    this.props.navigation.dispatch(resetAction)
+
+    this.props.screenProps.rootNavigator.dispatch(resetAction)
   }
 
   savePlayerToSettings (player) {
