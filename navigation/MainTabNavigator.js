@@ -1,7 +1,8 @@
 import React from 'react'
 import { Platform } from 'react-native'
+import { Notifications } from 'expo'
 import { Ionicons } from '@expo/vector-icons'
-import { TabNavigator, TabBarBottom } from 'react-navigation'
+import { TabNavigator, TabBarBottom, NavigationActions } from 'react-navigation'
 
 import Colors from '../constants/Colors'
 
@@ -78,6 +79,40 @@ export const Navigator = TabNavigator(
 )
 
 export default class MainTabNavigator extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this._handleNotification = this._handleNotification.bind(this)
+  }
+  componentWillMount() {
+    this._notificationSubscription = Notifications.addListener(this._handleNotification);
+  }
+
+  _handleNotification = (notification) => {
+    if (!notification || !notification.data || !notification.data.type) {
+      return
+    }
+
+    // User clicked it
+    if (notification.origin == 'selected') {
+      switch (notification.data.type) {
+        case 'NEWS_ITEM':
+          const navigateAction = NavigationActions.reset({
+            index: 0,
+            actions: [
+              NavigationActions.navigate({
+                routeName: 'Main',
+              })
+            ],
+          })
+          const response = this.props.navigation.dispatch(navigateAction)
+          break;
+      }
+    } else {
+      console.log('Already in app')
+    }
+  }
+
   render() {
     return <Navigator screenProps={{rootNavigator: this.props.navigation}} />
   }

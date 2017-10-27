@@ -11,9 +11,26 @@ import { NavigationActions } from 'react-navigation'
 import { SettingsFavPlayer, SettingsNotifications } from '../components/settings'
 import { SFText, Title, SubTitle } from '../components/StyledText'
 import { connect } from 'react-redux'
+import { graphql } from 'react-apollo'
+import gql from 'graphql-tag'
 import { players } from '../constants/Data'
 import { setSettings } from '../actions'
 
+@graphql(gql`
+  query {
+    currentUser{
+      notifications {
+        pushToken
+        newsAlerts
+      }
+    }
+  }
+`, {
+  options: props => ({
+    variables: { },
+    fetchPolicy: 'network-only',
+  })
+})
 @connect(
   state => ({
     settings: state.settings
@@ -36,7 +53,7 @@ export default class SettingsItemScreen extends React.Component {
   _settingsComponent () {
     switch(this.props.navigation.state.params.key) {
       case 'notifications':
-        return <SettingsNotifications settings={this.props.settings} save={this.props.setSettings} styles={styles}/>
+        return <SettingsNotifications settings={this.props.data.currentUser.notifications} save={this.props.setSettings} styles={styles}/>
         break
       case 'favPlayer':
         return <SettingsFavPlayer settings={this.props.settings} save={this.props.setSettings} styles={styles}/>
@@ -60,6 +77,18 @@ export default class SettingsItemScreen extends React.Component {
   }
 
   render() {
+    if (this.props.data.loading) {
+      return (
+        <View>
+          <ActivityIndicator
+            animating={ true }
+            style={{height: 80}}
+            size="large"
+          />
+        </View>
+      )
+    }
+
     const settingsComponent = this._settingsComponent()
     const title = this._getTitle()
     return (

@@ -12,23 +12,37 @@ import gql from 'graphql-tag'
 import { Constants } from 'expo'
 const env = Constants.manifest.extra.env
 
-const createOrUpdateUser = gql`
-  mutation($user: UserInput) {
-    createOrUpdateUser(user: $user){
-      token
-    }
-  }
-`
-
-const validateToken = gql`
+@graphql(gql`
   mutation($token: String) {
     validateToken(token: $token){
       token
     }
   }
-`
-
-class RegisterScreen extends React.Component {
+`, {
+  name : 'validateToken',
+  options: props => ({
+    variables: {
+      token: null,
+    },
+    fetchPolicy: 'network-only',
+  })
+})
+@graphql(gql`
+  mutation($user: UserInput) {
+    createOrUpdateUser(user: $user){
+      token
+    }
+  }
+`, {
+  name : 'createOrUpdateUser',
+  options: props => ({
+    variables: {
+      user: null,
+    },
+    fetchPolicy: 'network-only',
+  })
+})
+export default class RegisterScreen extends React.Component {
   static navigationOptions = {
     header: null,
   }
@@ -178,22 +192,3 @@ const styles = StyleSheet.create({
   }
 })
 
-export default graphql(createOrUpdateUser, {
-  name : 'createOrUpdateUser',
-  options: props => ({
-    variables: {
-      user: null,
-    },
-    fetchPolicy: 'network-only',
-  })
-})(
-  graphql(validateToken, {
-    name : 'validateToken',
-    options: props => ({
-      variables: {
-        token: null,
-      },
-      fetchPolicy: 'network-only',
-    })
-  })(RegisterScreen)
-)

@@ -37,12 +37,16 @@ const list = [
     currentUser{
       givenName
       photoUrl
+      notifications {
+        pushToken
+        newsAlerts
+      }
     }
   }
 `, {
   options: props => ({
     variables: { },
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-and-network',
   })
 })
 @connect(

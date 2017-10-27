@@ -1,45 +1,70 @@
 import React from 'react'
 import { View, Text, Switch } from 'react-native'
 import { List, ListItem } from 'react-native-elements'
+import { registerForPushNotificationsAsync } from '../../services/pushNotifications'
+import { graphql } from 'react-apollo'
+import gql from 'graphql-tag'
 
+@graphql(gql`
+  mutation($notifications: NotificationsInput) {
+    setNotifications(notifications: $notifications){
+      pushToken
+      newsAlerts
+    }
+  }
+`, {
+  name : 'setNotifications',
+  options: props => ({
+    variables: {
+      notifications: {
+        pushToken: null,
+        newsAlerts: null,
+      }
+    },
+    fetchPolicy: 'network-only',
+  })
+})
 export default class SettingsNotifications extends React.Component {
   constructor(props) {
     super(props)
 
     this.setNewsAlerts = this.setNewsAlerts.bind(this)
-    this.setGameAlerts = this.setGameAlerts.bind(this)
   }
 
   componentWillMount () {
     this.setState({
-      notifications: this.props.settings.notifications,
+      notifications: this.props.settings || {},
     })
   }
 
-  setNewsAlerts (value) {
+  async componentDidMount () {
+    if (!this.props.settings || !this.props.settings.pushToken) {
+      const pushToken = await registerForPushNotificationsAsync()
+      if (pushToken) {
+        try {
+          await this.props.setNotifications({variables: { pushToken }})
+          this.setState({
+            notifications: {
+              ...this.state.notifications,
+              pushToken,
+            }
+          })
+        } catch (e) { console.log(e) }
+      }
+    }
+  }
+
+  async setNewsAlerts (value) {
     const notifications = {
       ...this.state.notifications,
       newsAlerts: value,
     }
 
-    this.setState({
-      notifications
-    })
+    delete notifications.__typename
 
-    this.saveNotifications(notifications)
-  }
+    await this.props.setNotifications({variables: { notifications }})
 
-  setGameAlerts (value) {
-    const notifications = {
-      ...this.state.notifications,
-      gameAlerts: value,
-    }
-
-    this.setState({
-      notifications
-    })
-
-    this.saveNotifications(notifications)
+    this.setState({ notifications })
   }
 
   saveNotifications (notifications) {
@@ -61,16 +86,6 @@ export default class SettingsNotifications extends React.Component {
               <Switch
                 value={this.state.notifications.newsAlerts}
                 onValueChange={this.setNewsAlerts} />
-            }
-            style={this.props.styles.listItem} />
-
-          <ListItem
-            title='Game alerts'
-            titleStyle={this.props.styles.titleStyle}
-            rightIcon={
-              <Switch
-                value={this.state.notifications.gameAlerts}
-                onValueChange={this.setGameAlerts} />
             }
             style={this.props.styles.listItem} />
         </List>

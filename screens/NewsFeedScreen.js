@@ -76,7 +76,7 @@ const limit = 10
         favPlayer,
         cursor: 0,
       },
-      fetchPolicy: 'network-only',
+      fetchPolicy: 'cache-and-network',
     }
   },
   props({ data: { loading, featured, favPlayer, newsItems, fetchMore, refetch } }) {
@@ -198,6 +198,9 @@ export default class NewsFeedScreen extends React.Component {
   }
 
   _renderCard ({item, index}) {
+    if (!item) {
+      return <View />
+    }
     const uri = item.image ? item.image.url : ''
     return (
       <TouchableOpacity style={{width: Dimensions.get('window').width - 48}} key={item.id} activeOpacity={0.8} onPress={() => this.navigateToItem(item.id)}>
@@ -207,9 +210,10 @@ export default class NewsFeedScreen extends React.Component {
   }
 
   _renderListItem ({item, index}) {
+    const uri = item.image ? item.image.url : ''
     return (
       <TouchableOpacity key={item.id} activeOpacity={0.8} onPress={() => this.navigateToItem(item.id)}>
-        <ListItem key={ index } title={item.title} content={this.dateString(item.pubDateTimestamp)} source={{uri: item.image.url}} />
+        <ListItem key={ index } title={item.title} content={this.dateString(item.pubDateTimestamp)} source={{uri}} />
       </TouchableOpacity>
     )
   }
